@@ -1,28 +1,28 @@
 import axios from 'axios'
 
-export async function getCities(): Promise<ICitiesResult> {
+export async function getCities(): Promise<ICitiesResponse> {
   const url = `http://localhost:4000/rest/cities`
-  const response = await axios.get<ICitiesResult>(url)
+  const response = await axios.get<ICitiesResponse>(url)
   return {
     cities: response.data.cities,
     total: response.data.total,
   }
 }
 
-export async function getCitiesSearch(searchParam: string): Promise<ICitiesResult> {
+export async function getCitiesSearch(searchParam: string): Promise<ICitiesResponse> {
   const url = `http://localhost:4000/rest/cities?name=${searchParam}`
-  const response = await axios.get<ICitiesResult>(url)
+  const response = await axios.get<ICitiesResponse>(url)
   return {
     cities: response.data.cities,
     total: response.data.total,
   }
 }
 
-export async function putCities(city: ICity, selection: string): Promise<any> {
+export async function putCity(city: ICity, selection: string): Promise<unknown> {
   const url = `http://localhost:4000/rest/cities/${city.id}`
-  const choices = {
+  const body = {
     visited: selection === 'visited' ? !city.visited : city.visited,
     wishlist: selection === 'wishlist' ? !city.wishlist : city.wishlist,
   }
-  return await axios.put<any>(url, choices)
+  return await axios.put(url, body)
 }

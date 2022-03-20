@@ -1,42 +1,47 @@
-import React, { useEffect, useState, Fragment } from 'react'
-import type { FC } from 'react'
+import { useEffect, useState } from 'react'
+
 import { InputRightElement, Input, InputGroup, IconButton, Tooltip } from '@chakra-ui/react'
-import { getCities, getCitiesSearch } from '../api/citiesApi'
+import { getCities, getCitiesSearch } from '../../api/citiesApi'
+
 import { CloseIcon, Search2Icon } from '@chakra-ui/icons'
 import { debounce } from 'lodash'
 
-export const SearchTool: FC = () => {
+export const SearchTool = ({ cityListEvent, searchParamEvent, reloadEvent }: ISearchToolView): JSX.Element => {
   const [searchParam, setSearchParam] = useState<string | undefined>()
-  const [cityList, setCityList] = useState<ICity[]>()
-  const handleChange = (event: { target: { value: string } }) => setSearchParam(event.target.value)
 
   useEffect(() => {
     const storageSearchParam = localStorage.getItem('searchParam')
     if (!searchParam && storageSearchParam) {
       setSearchParam(storageSearchParam)
     }
-    getCities().then(response => setCityList(response.cities))
-  }, [])
+    if (!searchParam) {
+      getCities().then(response => cityListEvent(response.cities))
+    }
+  }, [reloadEvent])
 
   useEffect(() => {
     if (searchParam) {
-      getCitiesSearch(searchParam).then(response => setCityList(response.cities))
+      getCitiesSearch(searchParam).then(response => cityListEvent(response.cities))
+      searchParamEvent(searchParam)
     }
     if (searchParam === '') {
-      getCities().then(response => setCityList(response.cities))
+      getCities().then(response => cityListEvent(response.cities))
     }
     return () => {
-      if (searchParam) {
+      if (searchParam || searchParam === '') {
         localStorage.setItem('searchParam', searchParam)
       }
     }
-  }, [searchParam])
+  }, [searchParam, reloadEvent])
+
+  const handleSearch = (event: { target: { value: string } }) => setSearchParam(event.target.value)
 
   return (
     <InputGroup>
       <Input //
-        onChange={debounce(handleChange, 300)}
-        placeholder={searchParam ? searchParam : 'Search by city'}
+        data-testid="search-input"
+        onChange={debounce(handleSearch, 300)}
+        placeholder={searchParam || 'Search by city'}
       />
       <InputRightElement
         children={
